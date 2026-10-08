@@ -1,9 +1,19 @@
-// Cloudflare config: serves everything in ./public as a static site (no server code).
+// Cloudflare config. Files in ./public are served as-is; src/worker.js only handles /api/*
+// (the auto-updating Instagram gallery). See README for the one-time IG_TOKEN setup.
 {
-  "name": "hairbeatsa",
+  "name": "hairbeatsa-public",
+  "main": "src/worker.js",
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./public",
-    "not_found_handling": "404-page"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "INSTAGRAM", "class_name": "InstagramFeed" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["InstagramFeed"] }],
+  "triggers": { "crons": ["17 10 * * *"] },
+  "observability": { "enabled": true }
 }

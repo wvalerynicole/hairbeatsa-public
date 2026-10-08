@@ -12,7 +12,8 @@ public/              ← everything that gets published
   _headers           ← security headers (read by Cloudflare, not published)
   images/            ← put photos here
   og-image.png       ← preview image shown when the link is shared
-wrangler.jsonc       ← Cloudflare settings
+src/worker.js        ← small Cloudflare script for the auto-updating Instagram gallery
+wrangler.jsonc       ← Cloudflare settings (the "name" must match the Worker's name in the dashboard)
 ```
 
 ## Preview locally
@@ -46,6 +47,31 @@ python3 -m http.server 8000 --directory public
 1. Buy the domain through **Cloudflare Registrar**, or if you bought it somewhere else, add it to Cloudflare and switch the nameservers at the registrar.
 2. Open the Worker, then **Settings → Domains & Routes → Add → Custom domain**. Add `hairbeatsa.com`, then add `www.hairbeatsa.com`.
 3. Optional: under **Rules → Redirect Rules**, use the "Redirect from WWW to root" template so everyone ends up on `hairbeatsa.com`.
+
+## Auto-updating Instagram gallery
+
+The "Work" gallery shows six built-in photos. Once the Instagram key below is set up,
+the page replaces them with the latest @hair.beat photo posts (videos are skipped) and checks Instagram about once an hour.
+The key lives in Cloudflare, never in this repo, and it renews itself automatically every week.
+If Instagram is ever unavailable, the built-in photos stay.
+
+**One-time setup (signed in as Valery):**
+
+1. **Instagram app:** make @hair.beat a professional account if it isn't one already
+   (Settings → Account type and tools → Switch to professional account → Business or Creator).
+2. **developers.facebook.com:** log in, choose **Create app**, pick the Instagram use case
+   ("Manage messaging & content on Instagram"), and choose the **Business** app type.
+3. In the app, open **Instagram → API setup with Instagram login → Generate access tokens → Add account**.
+   Log in as @hair.beat, allow access, then copy the token.
+   If it asks you to add an Instagram tester, accept the invite in the Instagram app under
+   Settings → Website permissions → Apps and websites → Tester invites.
+   The app can stay in Development mode, because it only reads her own posts.
+4. **Cloudflare:** go to Workers & Pages → `hairbeatsa-public` → Settings → Variables and Secrets → **Add**.
+   Set the type to **Secret**, the name to `IG_TOKEN`, paste the token as the value, then click **Deploy**.
+5. Open `/api/instagram` on the site. It should list posts. Reload the home page to see them in the gallery.
+
+**If it stops updating** (for example after an Instagram password change), generate a new token (step 3) and
+replace the `IG_TOKEN` secret. The Worker's **Logs** tab shows a daily `instagram token refresh` line.
 
 ## Keeping the repo secure
 

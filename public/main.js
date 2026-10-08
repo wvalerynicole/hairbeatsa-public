@@ -8,6 +8,30 @@
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
 
+  // Swap in the latest Instagram photos when the feed is available (see src/worker.js).
+  // On any problem the six built-in photos stay as they are.
+  const gallery = document.querySelector("[data-ig-gallery]");
+  if (gallery && "fetch" in window) {
+    fetch("/api/instagram", { headers: { accept: "application/json" } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const posts = (data && Array.isArray(data.posts) ? data.posts : []).filter((p) =>
+          typeof p.src === "string" && p.src.startsWith("/api/instagram/media/") &&
+          typeof p.permalink === "string" && p.permalink.startsWith("https://www.instagram.com/"));
+        if (posts.length < 3) return;
+        const tiles = gallery.querySelectorAll(".gallery-item");
+        posts.slice(0, tiles.length).forEach((post, i) => {
+          const tile = tiles[i];
+          const img = tile.querySelector("img");
+          tile.href = post.permalink;
+          img.src = post.src;
+          img.alt = post.alt || "Recent hair work by Valery at Hair Beat";
+          tile.querySelector(".gallery-tag")?.remove();
+        });
+      })
+      .catch(() => {});
+  }
+
   if (!("IntersectionObserver" in window)) return;
 
   // Hide the mobile "Book now" bar while the hero (which has its own booking button) is on screen.
