@@ -9,4 +9,4 @@
   Cross-Origin-Opener-Policy: same-origin
 
 /images/*
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=86400

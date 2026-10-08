@@ -416,7 +416,7 @@ em {
 }
 .portrait {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 5 / 6;
   border-radius: 999px 999px var(--radius-lg) var(--radius-lg);
   overflow: hidden;
   background:
@@ -426,10 +426,11 @@ em {
 }
 /* Transparent cutout, so the photo keeps its true colors on any background. */
 .portrait img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 0;
+  height: auto;
 }
 .portrait::after {
   content: "";
@@ -439,19 +440,10 @@ em {
   border-radius: 999px 999px 20px 20px;
   pointer-events: none;
 }
-.portrait::before {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 26%;
-  background: linear-gradient(180deg, rgba(226, 205, 178, 0), #e2cdb2 80%);
-  z-index: 1;
-  pointer-events: none;
-}
 .portrait-tag {
   position: absolute;
   left: -6%;
-  bottom: 9%;
+  bottom: -22px;
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -939,7 +931,7 @@ em {
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; }
 
   .about-grid { grid-template-columns: 1fr; }
-  .about-media { width: min(100%, 380px); }
+  .about-media { width: min(100%, 380px); margin-bottom: 28px; }
   .portrait-tag { left: -2%; }
   .reviews-head { flex-direction: column; align-items: flex-start; }
   .review-grid { grid-template-columns: 1fr 1fr; }

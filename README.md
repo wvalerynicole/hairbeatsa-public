@@ -27,7 +27,7 @@ python3 -m http.server 8000 --directory public
 - **Text, services, FAQ:** edit `public/index.html`. Each section has a comment label (`<!-- SERVICES -->`, etc.).
 - **Photos:** the "Work" gallery uses six photos from @hair.beat (`public/images/work-*.jpg`, 720×900).
   To swap one, replace the file and update its caption and `alt` text in `index.html`.
-  The About portrait (`images/valery.webp`) is a transparent cutout, so it keeps its true colors on any background.
+  The About portrait (`images/valery-portrait.webp`) is a transparent cutout, so it keeps its true colors on any background.
   To add a hero photo, follow the "To show a real photo" comment in `index.html`.
 - **Reviews:** the review cards in the `<!-- REVIEWS -->` section are copied from verified Vagaro reviews.
   To add a new one, duplicate a `review-card` block. Update the rating and review count in the hero and the reviews heading when they change.
