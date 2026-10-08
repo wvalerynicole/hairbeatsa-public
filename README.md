@@ -25,9 +25,12 @@ python3 -m http.server 8000 --directory public
 ## Editing content
 
 - **Text, services, FAQ:** edit `public/index.html`. Each section has a comment label (`<!-- SERVICES -->`, etc.).
-- **Photos:** add images to `public/images/`, then follow the comments in `index.html` that start with
-  "To show a real photo" (hero), "To use a portrait" (about) and "OPTIONAL GALLERY" (work section).
-  Use JPGs around 1600px on the long side, ideally under 400 KB each.
+- **Photos:** the "Work" gallery uses six photos from @hair.beat (`public/images/work-*.jpg`, 720×900).
+  To swap one, replace the file and update its caption and `alt` text in `index.html`.
+  The About portrait (`images/valery.webp`) is a transparent cutout, so it keeps its true colors on any background.
+  To add a hero photo, follow the "To show a real photo" comment in `index.html`.
+- **Reviews:** the review cards in the `<!-- REVIEWS -->` section are copied from verified Vagaro reviews.
+  To add a new one, duplicate a `review-card` block. Update the rating and review count in the hero and the reviews heading when they change.
 - **Prices and hours** are not on the site on purpose. They live on Vagaro so there is only one place to update them.
 
 ## Deploy on Cloudflare

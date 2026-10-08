@@ -69,6 +69,8 @@
       <nav class="primary-nav" aria-label="Primary">
         <a href="#about">About</a>
         <a href="#services">Services</a>
+        <a href="#work">Work</a>
+        <a href="#reviews">Reviews</a>
         <a href="#info">Good to know</a>
         <a href="#visit">Visit</a>
       </nav>
@@ -89,6 +91,7 @@
             <a class="btn btn-ghost" href="#services">Explore services</a>
           </div>
           <ul class="hero-tags" aria-label="Highlights">
+            <li><a href="#reviews"><span class="stars" aria-hidden="true">★★★★★</span> 5.0 · 98+ reviews</a></li>
             <li>Se habla español</li>
             <li>Free parking</li>
             <li>Women · Men · Kids</li>
@@ -199,23 +202,24 @@
     <!-- ABOUT -->
     <section class="section about" id="about">
       <div class="container about-grid">
-        <div class="about-card reveal">
-          <!--
-            To use a portrait, add it to /public/images/ and replace the monogram with:
-            <img src="/images/valery.jpg" alt="Valery, owner and stylist at Hair Beat" width="800" height="1000">
-          -->
-          <span class="monogram" aria-hidden="true">V</span>
-          <blockquote class="about-quote">
-            <p>“My goal is to provide personalized, high-quality hair services in a welcoming and relaxing environment where every guest feels confident, refreshed, and cared for.”</p>
-            <footer>Valery, founder of Hair Beat</footer>
-          </blockquote>
-        </div>
+        <figure class="about-media reveal">
+          <div class="portrait">
+            <img src="/images/valery.webp" alt="Valery, owner and stylist at Hair Beat, smiling with arms crossed" width="1000" height="1209" loading="lazy" decoding="async">
+          </div>
+          <figcaption class="portrait-tag">
+            <span class="portrait-name">Valery</span>
+            <span class="portrait-role">Owner &amp; stylist</span>
+          </figcaption>
+        </figure>
 
         <div class="about-copy reveal">
           <p class="eyebrow">Meet your stylist</p>
           <h2 class="h2">Hi, I’m <em>Valery.</em></h2>
           <p>I’m a Miami-trained hairstylist with 13 years of experience, proudly serving San Antonio since 2017. I specialize in balayage, dimensional color, highlights, root touch-ups, and precision haircuts for women, men and children.</p>
-          <p>With a background in blow-dry bar styling, creating beautiful, long-lasting blowouts is one of my favorite parts of every appointment. Every visit is personalized and relaxing — just you, your hair and the look you’ve been dreaming of.</p>
+          <p>With a background in blow-dry bar styling, creating beautiful, long-lasting blowouts is one of my favorite parts of every appointment.</p>
+          <blockquote class="pull-quote">
+            <p>“My goal is to provide personalized, high-quality hair services in a welcoming and relaxing environment where every guest feels confident, refreshed, and cared for.”</p>
+          </blockquote>
 
           <ul class="checklist" aria-label="Credentials">
             <li>Certified in Brazilian Blowout smoothing treatments</li>
@@ -292,24 +296,99 @@
       </div>
     </section>
 
+    <!-- REVIEWS (copied from verified Vagaro reviews; see vagaro.com/hairbeat/reviews) -->
+    <section class="section reviews" id="reviews">
+      <div class="container">
+        <div class="reviews-head reveal">
+          <div>
+            <p class="eyebrow">Client reviews</p>
+            <h2 class="h2">Loved in <em>San Antonio</em></h2>
+          </div>
+          <a class="rating-summary" href="https://www.vagaro.com/hairbeat/reviews" target="_blank" rel="noopener">
+            <span class="rating-score">5.0</span>
+            <span class="rating-detail">
+              <span class="stars" aria-label="5 out of 5 stars">★★★★★</span>
+              <span class="rating-count">98+ verified reviews on Vagaro</span>
+            </span>
+          </a>
+        </div>
+
+        <div class="review-grid">
+          <figure class="review-card review-card--feature reveal">
+            <span class="stars" aria-label="5 out of 5 stars">★★★★★</span>
+            <blockquote><p>“I’ve been getting my hair done with Valery for almost 2 years and I can’t recommend her enough to everyone I know. She is the absolute sweetest, she is so professional and helpful and you will never leave disappointed. She explains everything so well and is so uplifting towards her customers, always finding a way to make you feel so confident after sitting in her chair! Her work is absolutely beautiful and she gives the best blowouts ever.”</p></blockquote>
+            <figcaption><span class="review-name">Maria W.</span><span class="review-meta">Verified · Vagaro · Oct 2026</span></figcaption>
+          </figure>
+
+          <figure class="review-card reveal">
+            <span class="stars" aria-label="5 out of 5 stars">★★★★★</span>
+            <blockquote><p>“Valery does excellent work. She knows exactly what to do with my hair and it comes out beautiful every time. I get so many compliments!”</p></blockquote>
+            <figcaption><span class="review-name">Sandy Z.</span><span class="review-meta">Verified · Vagaro · Aug 2025</span></figcaption>
+          </figure>
+
+          <figure class="review-card reveal">
+            <span class="stars" aria-label="5 out of 5 stars">★★★★★</span>
+            <blockquote lang="es"><p>“¡Gracias por todo! Me encantó todo: la experiencia, mi pelo y la plática.”</p></blockquote>
+            <figcaption><span class="review-name">Melissa</span><span class="review-meta">Verified · Vagaro · Mar 2026</span></figcaption>
+          </figure>
+
+          <figure class="review-card reveal">
+            <span class="stars" aria-label="5 out of 5 stars">★★★★★</span>
+            <blockquote><p>“Valery is super sweet and attentive. She also uses coloring product without ammonia, which I love.”</p></blockquote>
+            <figcaption><span class="review-name">Brigette N.</span><span class="review-meta">Verified · Vagaro · Mar 2026</span></figcaption>
+          </figure>
+
+          <figure class="review-card reveal">
+            <span class="stars" aria-label="5 out of 5 stars">★★★★★</span>
+            <blockquote lang="es"><p>“¡El servicio fue extraordinario! Y Valery, maravillosa persona.”</p></blockquote>
+            <figcaption><span class="review-name">Marian P.</span><span class="review-meta">Verified · Vagaro · Jun 2025</span></figcaption>
+          </figure>
+        </div>
+
+        <div class="cta-row reviews-cta reveal">
+          <a class="btn btn-dark" href="https://www.vagaro.com/hairbeat/reviews" target="_blank" rel="noopener">Read all reviews on Vagaro</a>
+          <a class="btn btn-ghost" href="https://share.google/tzHTC7y3yzHurRGke" target="_blank" rel="noopener">See Google reviews</a>
+        </div>
+      </div>
+    </section>
+
     <!-- SOCIAL PROOF -->
-    <section class="section social" aria-labelledby="social-title">
+    <section class="section social" id="work" aria-labelledby="social-title">
       <div class="container">
         <div class="section-head section-head--light reveal">
           <p class="eyebrow eyebrow--light">The work</p>
           <h2 class="h2" id="social-title">See the transformations</h2>
-          <p class="section-intro">Before-and-afters, color inspiration and the latest looks from the chair.</p>
+          <p class="section-intro">Recent looks from the chair. Follow <a href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">@hair.beat</a> for new transformations.</p>
         </div>
 
-        <!--
-          OPTIONAL GALLERY — once you have photos, add them to /public/images/ and uncomment:
-          <div class="gallery">
-            <img src="/images/work-1.jpg" alt="Honey balayage on long hair" loading="lazy" width="600" height="750">
-            <img src="/images/work-2.jpg" alt="Dimensional brunette highlights" loading="lazy" width="600" height="750">
-            <img src="/images/work-3.jpg" alt="Smooth, voluminous blowout" loading="lazy" width="600" height="750">
-            <img src="/images/work-4.jpg" alt="Lived-in blonde balayage" loading="lazy" width="600" height="750">
-          </div>
-        -->
+        <!-- Photos from @hair.beat on Instagram. To swap one, replace the file in /public/images/ (720×900 works best). -->
+        <div class="gallery">
+          <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
+            <img src="/images/work-caramel-balayage.jpg" alt="Long brunette hair with soft caramel balayage, styled in loose waves" width="720" height="900" loading="lazy" decoding="async">
+            <span class="gallery-tag">Caramel balayage</span>
+          </a>
+          <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
+            <img src="/images/work-copper-before-after.jpg" alt="Before and after: blonde hair transformed to a rich copper red" width="720" height="900" loading="lazy" decoding="async">
+            <span class="gallery-tag">Before &amp; after · copper</span>
+          </a>
+          <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
+            <img src="/images/work-golden-blonde.jpg" alt="Golden blonde color with soft face-framing layers" width="720" height="900" loading="lazy" decoding="async">
+            <span class="gallery-tag">Golden blonde &amp; layers</span>
+          </a>
+          <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
+            <img src="/images/work-dimensional-highlights.jpg" alt="Layered blowout with dimensional highlights" width="720" height="900" loading="lazy" decoding="async">
+            <span class="gallery-tag">Dimensional highlights</span>
+          </a>
+          <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
+            <img src="/images/work-glossy-brunette.jpg" alt="Glossy brunette color with smooth, bouncy waves shown from four angles" width="720" height="900" loading="lazy" decoding="async">
+            <span class="gallery-tag">Glossy brunette</span>
+          </a>
+          <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
+            <img src="/images/work-teal-peekaboo.jpg" alt="Brunette curls with a teal peekaboo underneath" width="720" height="900" loading="lazy" decoding="async">
+            <span class="gallery-tag">Teal peekaboo</span>
+          </a>
+        </div>
+
 
         <div class="social-grid">
           <a class="social-card reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
