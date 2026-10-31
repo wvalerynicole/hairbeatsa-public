@@ -5,21 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Page not found | Hair Beat by Valery</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Manrope:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/i18n.js" defer></script>
 </head>
 <body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Hair Beat by Valery, home">
+        <img src="/images/logo.webp" alt="" width="502" height="187">
+      </a>
+      <div class="lang-toggle" role="group" aria-label="Language / Idioma" data-lang-toggle data-active="en">
+        <button type="button" data-lang="en" aria-pressed="true"><span aria-hidden="true">EN</span><span class="sr-only" lang="en">English</span></button>
+        <button type="button" data-lang="es" aria-pressed="false"><span aria-hidden="true">ES</span><span class="sr-only" lang="es">Español</span></button>
+      </div>
+    </div>
+  </header>
   <main class="section not-found">
     <div class="container">
       <p class="eyebrow">404</p>
-      <h1 class="display">This page had a <em>bad hair day.</em></h1>
-      <p class="lede">The page you’re looking for doesn’t exist — but your next great look is one click away.</p>
+      <h1 class="display" data-i18n="404.title">This page had a <em>bad hair day.</em></h1>
+      <p class="lede" data-i18n="404.lede">The page you’re looking for doesn’t exist — but your next great look is one click away.</p>
       <div class="cta-row">
-        <a class="btn btn-dark" href="/">Back to home</a>
-        <a class="btn btn-ghost" href="https://www.vagaro.com/hairbeat" target="_blank" rel="noopener">Book on Vagaro</a>
+        <a class="btn btn-dark" href="/" data-i18n="404.home">Back to home</a>
+        <a class="btn btn-ghost" href="https://www.vagaro.com/hairbeat" target="_blank" rel="noopener" data-i18n="404.book">Book on Vagaro</a>
       </div>
     </div>
   </main>
