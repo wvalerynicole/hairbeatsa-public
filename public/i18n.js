@@ -134,6 +134,7 @@
     "visit.eyebrow": "Visita el estudio",
     "visit.address": "Dirección",
     "visit.phone": "Teléfono",
+    "visit.email": "Correo",
     "visit.hours": "Horario",
     "visit.hoursText": "Con cita previa: consulta la disponibilidad en vivo en <a href=\"https://www.vagaro.com/hairbeat\" target=\"_blank\" rel=\"noopener\">Vagaro</a>",
     "visit.parking": "Estacionamiento",
