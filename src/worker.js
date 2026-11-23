@@ -49,7 +49,7 @@ async function feedResponse(env, url) {
   if (!Number.isInteger(offset) || offset < 0 || offset >= MAX_POSTS || offset % PAGE_SIZE) {
     return json({ error: "invalid offset" }, 400);
   }
-  const posts = await feedStore(env).getPosts();
+  const { posts, status } = await feedStore(env).getFeed();
   const page = posts.slice(offset, offset + PAGE_SIZE);
   const body = {
     posts: page.map(({ id, permalink, alt }) => ({
@@ -60,7 +60,9 @@ async function feedResponse(env, url) {
     })),
     hasMore: offset + PAGE_SIZE < posts.length,
   };
-  return json(body, 200, posts.length ? "public, max-age=600" : "no-store");
+  const response = json(body, 200, status === "ready" && posts.length ? "public, max-age=600" : "no-store");
+  response.headers.set("x-instagram-feed-status", status);
+  return response;
 }
 
 async function mediaResponse(request, env, ctx, id) {
@@ -121,27 +123,33 @@ export class InstagramFeed extends DurableObject {
   inflight = null;
 
   async getPosts() {
+    return (await this.getFeed()).posts;
+  }
+
+  async getFeed() {
     const saved = await this.ctx.storage.get("feed");
     const source = this.env.IG_UNIFIED_TOKEN ? "unified" : "legacy";
-    if (saved?.expanded && (saved.source ?? "legacy") === source && Date.now() - saved.fetchedAt < FEED_TTL_MS) return saved.posts;
+    if (saved?.status && saved.source === source && Date.now() - saved.fetchedAt < FEED_TTL_MS) return saved;
     this.inflight ??= this.#reload(saved, source).finally(() => (this.inflight = null));
     return this.inflight;
   }
 
   async #reload(saved, source) {
     const token = this.env.IG_UNIFIED_TOKEN || await this.#token();
-    if (!token) return saved?.posts ?? [];
+    if (!token) return { posts: saved?.posts ?? [], status: "unconfigured" };
     try {
       const account = source === "unified" ? INSTAGRAM_ACCOUNT_ID : "me";
       const posts = await fetchPosts(apiBase(this.env), account, token);
-      await this.ctx.storage.put("feed", { posts, source, expanded: true, fetchedAt: Date.now() });
-      return posts;
+      const feed = { posts, source, status: "ready", fetchedAt: Date.now() };
+      await this.ctx.storage.put("feed", feed);
+      return feed;
     } catch (err) {
       console.error(`instagram feed fetch failed: ${err.message}`);
       // Keep serving the last good posts, and wait a few minutes before trying again.
       const posts = saved?.posts ?? [];
-      await this.ctx.storage.put("feed", { posts, source, expanded: true, fetchedAt: Date.now() - FEED_TTL_MS + RETRY_AFTER_ERROR_MS });
-      return posts;
+      const feed = { posts, source, status: "upstream-error", fetchedAt: Date.now() - FEED_TTL_MS + RETRY_AFTER_ERROR_MS };
+      await this.ctx.storage.put("feed", feed);
+      return feed;
     }
   }
 
