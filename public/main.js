@@ -44,31 +44,59 @@
     });
   }
 
-  // Swap in the latest Instagram photos when the feed is available (see src/worker.js).
-  // On any problem the six built-in photos stay as they are.
   const gallery = document.querySelector("[data-ig-gallery]");
-  if (gallery && "fetch" in window) {
-    fetch("/api/instagram", { headers: { accept: "application/json" } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        const posts = (data && Array.isArray(data.posts) ? data.posts : []).filter((p) =>
-          typeof p.src === "string" && p.src.startsWith("/api/instagram/media/") &&
-          typeof p.permalink === "string" && p.permalink.startsWith("https://www.instagram.com/"));
-        if (posts.length < 3) return;
-        const defaultAlt = "Recent hair work by Valery at Hair Beat";
-        const fallbackAlt = window.hbText ? window.hbText("work.photoAlt", defaultAlt) : defaultAlt;
-        const tiles = gallery.querySelectorAll(".gallery-item");
-        posts.slice(0, tiles.length).forEach((post, i) => {
-          const tile = tiles[i];
+  const loadMore = document.querySelector("[data-ig-more]");
+  const galleryStatus = document.querySelector("[data-ig-status]");
+  if (gallery && loadMore && galleryStatus && "fetch" in window) {
+    const tiles = gallery.querySelectorAll(".gallery-item");
+    const seen = new Set();
+    let offset = 0;
+
+    async function loadPhotos() {
+      const initial = offset === 0;
+      loadMore.disabled = true;
+      galleryStatus.textContent = "";
+      try {
+        const res = await fetch(`/api/instagram?offset=${offset}`, { headers: { accept: "application/json" } });
+        if (!res.ok) throw new Error("Instagram feed unavailable");
+        const data = await res.json();
+        const posts = data.posts.filter((post) =>
+          /^\/api\/instagram\/media\/\d+$/.test(post.src) &&
+          post.permalink?.startsWith("https://www.instagram.com/"));
+        if (initial && posts.length < 3) return;
+
+        let firstAdded;
+        posts.forEach((post, index) => {
+          if (seen.has(post.src)) return;
+          seen.add(post.src);
+          const tile = initial ? tiles[index] : tiles[0].cloneNode(true);
           const img = tile.querySelector("img");
           tile.href = post.permalink;
           img.src = post.src;
-          img.alt = post.alt || fallbackAlt;
-          img.removeAttribute("data-i18n-attr"); // the caption is the alt text now; the language switch leaves it alone
+          img.alt = post.alt || window.hbText?.("work.photoAlt", "Recent hair work by Valery at Hair Beat") || "Recent hair work by Valery at Hair Beat";
+          img.removeAttribute("data-i18n-attr");
           tile.querySelector(".gallery-tag")?.remove();
+          if (!initial) {
+            tile.classList.remove("reveal", "pre-reveal");
+            gallery.append(tile);
+            firstAdded ??= tile;
+          }
         });
-      })
-      .catch(() => {});
+        offset += tiles.length;
+        if (document.activeElement === loadMore) firstAdded?.focus();
+        loadMore.closest(".gallery-controls").hidden = !data.hasMore;
+      } catch {
+        if (!initial) {
+          const message = "Couldn't load more photos. Try again.";
+          galleryStatus.textContent = window.hbText?.("work.loadError", message) || message;
+        }
+      } finally {
+        loadMore.disabled = false;
+      }
+    }
+
+    loadMore.addEventListener("click", loadPhotos);
+    void loadPhotos();
   }
 
   if (!("IntersectionObserver" in window)) return;

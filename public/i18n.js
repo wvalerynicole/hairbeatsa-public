@@ -105,6 +105,8 @@
     "work.tag4": "Highlights dimensionales",
     "work.tag5": "Castaño brillante",
     "work.tag6": "Peekaboo turquesa",
+    "work.loadMore": "Ver más",
+    "work.loadError": "No se pudieron cargar más fotos. Inténtalo de nuevo.",
     "work.photoAlt": "Trabajo reciente de Valery en Hair Beat",
 
     "social.igText": "Sígueme para ver color, cortes y blowouts recientes.",

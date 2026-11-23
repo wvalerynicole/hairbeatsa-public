@@ -63,7 +63,8 @@ python3 -m http.server 8000 --directory public
 ## Auto-updating Instagram gallery
 
 The "Work" gallery shows six built-in photos. Once the Instagram key below is set up,
-the page replaces them with the latest @hair.beat photo posts (videos are skipped) and checks Instagram about once an hour.
+the page shows the latest six @hair.beat photo posts and loads six more at a time, up to 24.
+The Worker checks Instagram about once an hour and skips videos.
 Store the token as a Cloudflare Worker secret. If Instagram is unavailable, the Worker serves
 its last saved feed when available and the site can fall back to its built-in photos.
 

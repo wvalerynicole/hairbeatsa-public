@@ -766,6 +766,9 @@ em {
   gap: 16px;
   margin-bottom: clamp(40px, 6vw, 64px);
 }
+.gallery-controls { margin: 24px 0; text-align: center; }
+.gallery-controls p:empty { margin: 0; }
+.gallery-controls button:disabled { opacity: .65; cursor: wait; }
 .gallery-item {
   position: relative;
   display: block;

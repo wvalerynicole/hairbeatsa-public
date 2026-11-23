@@ -330,7 +330,7 @@
         </div>
 
         <!-- Photos from @hair.beat on Instagram. To swap one, replace the file in /public/images/ (720×900 works best). -->
-        <div class="gallery" data-ig-gallery>
+        <div class="gallery" id="work-gallery" data-ig-gallery>
           <a class="gallery-item reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">
             <img src="/images/work-caramel-balayage.jpg" alt="Long brunette hair with soft caramel balayage, styled in loose waves" width="720" height="900" loading="lazy" decoding="async" data-i18n-attr="alt:work.alt1">
             <span class="gallery-tag" data-i18n="work.tag1">Caramel balayage</span>
@@ -357,6 +357,11 @@
           </a>
         </div>
 
+
+        <div class="gallery-controls" hidden>
+          <button class="btn btn-ghost" type="button" aria-controls="work-gallery" data-ig-more data-i18n="work.loadMore">Load more</button>
+          <p role="status" data-ig-status></p>
+        </div>
 
         <div class="social-grid">
           <a class="social-card reveal" href="https://www.instagram.com/hair.beat/" target="_blank" rel="noopener">

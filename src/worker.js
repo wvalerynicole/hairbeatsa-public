@@ -16,7 +16,9 @@ const INSTAGRAM_ACCOUNT_ID = "17841422910143302";
 const FEED_TTL_MS = 60 * 60 * 1000; // re-check Instagram at most once an hour
 const RETRY_AFTER_ERROR_MS = 5 * 60 * 1000;
 const REFRESH_EVERY_MS = 6 * 24 * 60 * 60 * 1000; // tokens last 60 days; renew weekly
-const MAX_POSTS = 6;
+const PAGE_SIZE = 6;
+const MAX_POSTS = 24;
+const MAX_GRAPH_PAGES = 8;
 
 export default {
   async fetch(request, env, ctx) {
@@ -24,7 +26,7 @@ export default {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return json({ error: "method not allowed" }, 405);
     }
-    if (url.pathname === "/api/instagram") return feedResponse(env);
+    if (url.pathname === "/api/instagram") return feedResponse(env, url);
 
     const media = url.pathname.match(/^\/api\/instagram\/media\/(\d{1,30})$/);
     if (media) return mediaResponse(request, env, ctx, media[1]);
@@ -42,15 +44,21 @@ export default {
   },
 };
 
-async function feedResponse(env) {
+async function feedResponse(env, url) {
+  const offset = Number(url.searchParams.get("offset") ?? "0");
+  if (!Number.isInteger(offset) || offset < 0 || offset >= MAX_POSTS || offset % PAGE_SIZE) {
+    return json({ error: "invalid offset" }, 400);
+  }
   const posts = await feedStore(env).getPosts();
+  const page = posts.slice(offset, offset + PAGE_SIZE);
   const body = {
-    posts: posts.map(({ id, permalink, alt }) => ({
+    posts: page.map(({ id, permalink, alt }) => ({
       id,
       permalink,
       alt,
       src: `/api/instagram/media/${id}`,
     })),
+    hasMore: offset + PAGE_SIZE < posts.length,
   };
   return json(body, 200, posts.length ? "public, max-age=600" : "no-store");
 }
@@ -115,7 +123,7 @@ export class InstagramFeed extends DurableObject {
   async getPosts() {
     const saved = await this.ctx.storage.get("feed");
     const source = this.env.IG_UNIFIED_TOKEN ? "unified" : "legacy";
-    if (saved && (saved.source ?? "legacy") === source && Date.now() - saved.fetchedAt < FEED_TTL_MS) return saved.posts;
+    if (saved?.expanded && (saved.source ?? "legacy") === source && Date.now() - saved.fetchedAt < FEED_TTL_MS) return saved.posts;
     this.inflight ??= this.#reload(saved, source).finally(() => (this.inflight = null));
     return this.inflight;
   }
@@ -126,13 +134,13 @@ export class InstagramFeed extends DurableObject {
     try {
       const account = source === "unified" ? INSTAGRAM_ACCOUNT_ID : "me";
       const posts = await fetchPosts(apiBase(this.env), account, token);
-      await this.ctx.storage.put("feed", { posts, source, fetchedAt: Date.now() });
+      await this.ctx.storage.put("feed", { posts, source, expanded: true, fetchedAt: Date.now() });
       return posts;
     } catch (err) {
       console.error(`instagram feed fetch failed: ${err.message}`);
       // Keep serving the last good posts, and wait a few minutes before trying again.
       const posts = saved?.posts ?? [];
-      await this.ctx.storage.put("feed", { posts, source, fetchedAt: Date.now() - FEED_TTL_MS + RETRY_AFTER_ERROR_MS });
+      await this.ctx.storage.put("feed", { posts, source, expanded: true, fetchedAt: Date.now() - FEED_TTL_MS + RETRY_AFTER_ERROR_MS });
       return posts;
     }
   }
@@ -175,19 +183,35 @@ export class InstagramFeed extends DurableObject {
 
 async function fetchPosts(base, account, token) {
   const fields = "id,media_type,media_url,permalink,caption,timestamp";
-  const res = await fetch(`${base}/${account}/media?fields=${fields}&limit=25`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok || !Array.isArray(data?.data)) {
-    throw new Error(`Graph API status ${res.status}, error code ${Number(data?.error?.code) || "unknown"}`);
+  const url = new URL(`${base}/${account}/media`);
+  url.search = new URLSearchParams({ fields, limit: "25" });
+  const photos = new Map();
+
+  for (let page = 0; page < MAX_GRAPH_PAGES; page++) {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !Array.isArray(data?.data)) {
+      throw new Error(`Graph API status ${res.status}, error code ${Number(data?.error?.code) || "unknown"}`);
+    }
+
+    for (const media of data.data) {
+      const isPhoto = media.media_type === "IMAGE" || media.media_type === "CAROUSEL_ALBUM";
+      if (!isPhoto || !media.media_url || !/^\d+$/.test(media.id) || !/^https:\/\/www\.instagram\.com\//.test(media.permalink ?? "")) continue;
+      photos.set(media.id, {
+        id: media.id,
+        permalink: media.permalink,
+        mediaUrl: media.media_url,
+        alt: altText(media.caption),
+      });
+      if (photos.size === MAX_POSTS) return [...photos.values()];
+    }
+
+    const after = data.paging?.cursors?.after;
+    if (!data.paging?.next || !after || after === url.searchParams.get("after")) break;
+    url.searchParams.set("after", after);
   }
 
-  return data.data
-    .filter((m) => (m.media_type === "IMAGE" || m.media_type === "CAROUSEL_ALBUM") && m.media_url)
-    .filter((m) => /^\d+$/.test(m.id) && /^https:\/\/www\.instagram\.com\//.test(m.permalink ?? ""))
-    .slice(0, MAX_POSTS)
-    .map((m) => ({ id: m.id, permalink: m.permalink, mediaUrl: m.media_url, alt: altText(m.caption) }));
+  return [...photos.values()];
 }
 
 // First line of the caption without hashtags, mentions or emoji, for the image's alt text.
