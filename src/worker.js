@@ -3,14 +3,16 @@
 // Static files in ./public are served directly by Cloudflare. This Worker only handles /api/*:
 //   GET /api/instagram            → latest @hair.beat photos as JSON (no token or Instagram URLs exposed)
 //   GET /api/instagram/media/:id  → the photo itself, proxied from Instagram's CDN and cached
-// A daily cron renews the Instagram access token so it never hits its 60-day expiry.
+// A daily cron checks whether a legacy Instagram Login token needs renewal.
 //
-// Setup: add the Instagram token as a Worker secret named IG_TOKEN (see README).
+// Setup: add the Unified Login token as IG_UNIFIED_TOKEN (see README).
 // Without it, these endpoints return no posts and the page keeps its built-in photos.
 
 import { DurableObject } from "cloudflare:workers";
 
 const DEFAULT_API = "https://graph.instagram.com";
+const UNIFIED_API = "https://graph.facebook.com/v27.0";
+const INSTAGRAM_ACCOUNT_ID = "17841422910143302";
 const FEED_TTL_MS = 60 * 60 * 1000; // re-check Instagram at most once an hour
 const RETRY_AFTER_ERROR_MS = 5 * 60 * 1000;
 const REFRESH_EVERY_MS = 6 * 24 * 60 * 60 * 1000; // tokens last 60 days; renew weekly
@@ -92,7 +94,7 @@ function feedStore(env) {
 }
 
 function apiBase(env) {
-  return env.IG_API_BASE || DEFAULT_API;
+  return env.IG_API_BASE || (env.IG_UNIFIED_TOKEN ? UNIFIED_API : DEFAULT_API);
 }
 
 function json(body, status = 200, cacheControl = "no-store") {
@@ -112,28 +114,31 @@ export class InstagramFeed extends DurableObject {
 
   async getPosts() {
     const saved = await this.ctx.storage.get("feed");
-    if (saved && Date.now() - saved.fetchedAt < FEED_TTL_MS) return saved.posts;
-    this.inflight ??= this.#reload(saved).finally(() => (this.inflight = null));
+    const source = this.env.IG_UNIFIED_TOKEN ? "unified" : "legacy";
+    if (saved && (saved.source ?? "legacy") === source && Date.now() - saved.fetchedAt < FEED_TTL_MS) return saved.posts;
+    this.inflight ??= this.#reload(saved, source).finally(() => (this.inflight = null));
     return this.inflight;
   }
 
-  async #reload(saved) {
-    const token = await this.#token();
+  async #reload(saved, source) {
+    const token = this.env.IG_UNIFIED_TOKEN || await this.#token();
     if (!token) return saved?.posts ?? [];
     try {
-      const posts = await fetchPosts(apiBase(this.env), token);
-      await this.ctx.storage.put("feed", { posts, fetchedAt: Date.now() });
+      const account = source === "unified" ? INSTAGRAM_ACCOUNT_ID : "me";
+      const posts = await fetchPosts(apiBase(this.env), account, token);
+      await this.ctx.storage.put("feed", { posts, source, fetchedAt: Date.now() });
       return posts;
     } catch (err) {
       console.error(`instagram feed fetch failed: ${err.message}`);
       // Keep serving the last good posts, and wait a few minutes before trying again.
       const posts = saved?.posts ?? [];
-      await this.ctx.storage.put("feed", { posts, fetchedAt: Date.now() - FEED_TTL_MS + RETRY_AFTER_ERROR_MS });
+      await this.ctx.storage.put("feed", { posts, source, fetchedAt: Date.now() - FEED_TTL_MS + RETRY_AFTER_ERROR_MS });
       return posts;
     }
   }
 
   async refreshToken() {
+    if (this.env.IG_UNIFIED_TOKEN) return "skipped (Unified Login token)";
     const current = await this.#currentToken();
     if (!current) return "skipped (IG_TOKEN secret not set)";
     if (Date.now() - current.refreshedAt < REFRESH_EVERY_MS) return "skipped (renewed recently)";
@@ -168,13 +173,17 @@ export class InstagramFeed extends DurableObject {
   }
 }
 
-async function fetchPosts(base, token) {
+async function fetchPosts(base, account, token) {
   const fields = "id,media_type,media_url,permalink,caption,timestamp";
-  const res = await fetch(`${base}/me/media?fields=${fields}&limit=25&access_token=${encodeURIComponent(token)}`);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(`status ${res.status}: ${data?.error?.message ?? "bad response"}`);
+  const res = await fetch(`${base}/${account}/media?fields=${fields}&limit=25`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !Array.isArray(data?.data)) {
+    throw new Error(`Graph API status ${res.status}, error code ${Number(data?.error?.code) || "unknown"}`);
+  }
 
-  return (data.data ?? [])
+  return data.data
     .filter((m) => (m.media_type === "IMAGE" || m.media_type === "CAROUSEL_ALBUM") && m.media_url)
     .filter((m) => /^\d+$/.test(m.id) && /^https:\/\/www\.instagram\.com\//.test(m.permalink ?? ""))
     .slice(0, MAX_POSTS)

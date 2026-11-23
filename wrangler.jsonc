@@ -1,5 +1,5 @@
 // Cloudflare config. Files in ./public are served as-is; src/worker.js only handles /api/*
-// (the auto-updating Instagram gallery). See README for the one-time IG_TOKEN setup.
+// (the auto-updating Instagram gallery). See README for the one-time Instagram token setup.
 {
   "name": "hairbeatsa-public",
   "main": "src/worker.js",

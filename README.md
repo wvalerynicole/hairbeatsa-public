@@ -64,29 +64,21 @@ python3 -m http.server 8000 --directory public
 
 The "Work" gallery shows six built-in photos. Once the Instagram key below is set up,
 the page replaces them with the latest @hair.beat photo posts (videos are skipped) and checks Instagram about once an hour.
-The key lives in Cloudflare, never in this repo, and it renews itself automatically every week.
-If Instagram is ever unavailable, the built-in photos stay.
+Store the token as a Cloudflare Worker secret. If Instagram is unavailable, the Worker serves
+its last saved feed when available and the site can fall back to its built-in photos.
 
-**One-time setup (signed in as Valery):**
+1. In Meta Developers, open the app's Instagram use case and select **API setup with Unified login**.
+   Create or select the configuration in step 1. If Meta requires an Instagram Tester invitation,
+   accept it in Instagram as @hair.beat.
+2. In **Generate access tokens**, add @hair.beat if needed, then click **Generate token**.
+   Continue with Instagram as @hair.beat and select it under the Hair Beat business portfolio.
+3. In **Cloudflare → Workers & Pages → hairbeatsa-public → Settings → Variables and Secrets**,
+   add a **Secret** named `IG_UNIFIED_TOKEN`, paste the token, and deploy.
+4. Open `/api/instagram` on the site and check that it lists posts. Reload the homepage to see the gallery.
 
-1. **Instagram app:** make @hair.beat a professional account if it isn't one already
-   (Settings → Account type and tools → Switch to professional account → Business or Creator).
-   The account must be public.
-2. **developers.facebook.com/apps:** log in and click **Create app**. If it offers the Instagram use case
-   ("Manage messaging & content on Instagram"), pick it. Otherwise pick **Other**, then the **Business** app type.
-   Give it any name (for example "Hair Beat website") and click through.
-   If the Instagram product isn't added yet, find **Instagram** in the product list and click **Set up**.
-3. In the app, open **Instagram → API setup with Instagram login → Generate access tokens → Add account**.
-   Log in as @hair.beat, allow access, then click **Generate token** and copy it (a long string that usually starts with `IG`).
-   If it asks you to add an Instagram tester, accept the invite in the Instagram app under
-   Settings → Website permissions → Apps and websites → Tester invites.
-   The app can stay in Development mode, because it only reads her own posts.
-4. **Cloudflare:** go to Workers & Pages → `hairbeatsa-public` → Settings → Variables and Secrets → **Add**.
-   Set the type to **Secret**, the name to `IG_TOKEN`, paste the token as the value, then click **Deploy**.
-5. Open `/api/instagram` on the site. It should list posts. Reload the home page to see them in the gallery.
-
-**If it stops updating** (for example after an Instagram password change), generate a new token (step 3) and
-replace the `IG_TOKEN` secret. The Worker's **Logs** tab shows a daily `instagram token refresh` line.
+Unified Login uses the system-user token from Meta without the legacy Instagram token refresh.
+If access is revoked, generate a new token and replace `IG_UNIFIED_TOKEN`. Installations using
+an older Instagram Login token can continue using `IG_TOKEN`.
 
 **Story Highlights can't be pulled in automatically.** Instagram's official API has no Highlights endpoint, and its
 Stories endpoint only returns stories from the last 24 hours, never stories reshared from clients. The only tools that
